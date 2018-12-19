@@ -32,11 +32,13 @@ public class MyMealsListAdapter extends RecyclerView.Adapter<MyMealsListAdapter.
         holder.m = myMeals.get(position);
 
         holder.mid = holder.m.getMid();
+        holder.uid = holder.m.getUid();
         holder.photoS = holder.m.getPhoto();
         Picasso.with(context).load(holder.m.getPhoto()).into(holder.photo);
         holder.name.setText(holder.m.getName());
         holder.dateTime.setText(holder.m.getDateTime());
-        holder.type.setText(holder.m.getType().toString().toLowerCase());
+        if (holder.m.getType() == null) holder.type.setText("Supper");
+        else holder.type.setText(holder.m.getType().toString().toLowerCase());
         holder.caloriesAmount.setText(holder.m.getCaloriesAmount());
     }
 
@@ -49,7 +51,7 @@ public class MyMealsListAdapter extends RecyclerView.Adapter<MyMealsListAdapter.
         private ImageView photo;
         private String photoS;
         private TextView name, dateTime, type, caloriesAmount;
-        private String mid;
+        private String mid, uid;
         private Meal m;
 
         MyViewHolder(View view) {
@@ -65,8 +67,9 @@ public class MyMealsListAdapter extends RecyclerView.Adapter<MyMealsListAdapter.
                     Intent intent = new Intent(context, MealActivity.class);
                     String[] meals_table = {mid, photoS, name.getText().toString(), dateTime.getText().toString(), type.getText().toString(),
                             caloriesAmount.getText().toString()};
-
+                    intent.putExtra("uid", uid);
                     intent.putExtra("meals", meals_table);
+                    intent.putExtra("action", 1);
                     context.startActivity(intent);
                 }
             });

@@ -29,20 +29,20 @@
         android:layout_toStartOf="@+id/textViewDate"/>
 
     <TextView
-        android:id="@+id/textViewDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="setDateOnClick"
-        android:text="Set Date"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:layout_below="@+id/editTextSearch"
-        android:layout_marginRight="11dp"
-        android:layout_marginStart="11dp"
-        android:layout_marginTop="11dp"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="11dp"
-        />
+    android:id="@+id/textViewDate"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:onClick="setDateOnClick"
+    android:text="Set Date"
+    android:textSize="16sp"
+    android:gravity="center"
+    android:layout_below="@+id/editTextSearch"
+    android:layout_marginRight="11dp"
+    android:layout_marginStart="11dp"
+    android:layout_marginTop="11dp"
+    android:layout_alignParentEnd="true"
+    android:layout_marginEnd="11dp"
+    />
 
     <LinearLayout
         android:id="@+id/myMeals"
@@ -68,7 +68,7 @@
             android:textColor="#6C4E34"
             android:textStyle="bold"
             android:textSize="18dp"
-            android:text="Brak eventów!" />
+            android:text="No meals!" />
     </LinearLayout>
 
 </RelativeLayout>

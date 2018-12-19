@@ -58,13 +58,23 @@
 
     <TextView
         android:id="@+id/caloriesAmount"
-        android:layout_width="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:layout_marginBottom="11dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="10dp"
+        android:layout_toStartOf="@+id/cal"
+        android:text="X" />
+    <TextView
+        android:id="@+id/cal"
+        android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/name"
         android:layout_marginBottom="11dp"
         android:layout_marginStart="3dp"
         android:layout_marginTop="10dp"
         android:layout_alignParentEnd="true"
-        android:text="0 cal" />
+        android:text="cal" />
 
 </RelativeLayout>

@@ -62,6 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:inputType="number"
         android:layout_marginTop="10dp"
         android:layout_marginRight="11dp"
         android:layout_alignParentEnd="true"
@@ -115,6 +116,18 @@
         android:layout_toEndOf="@+id/textViewCaloriesAmount"
         android:layout_alignBaseline="@+id/textViewType"
         android:layout_marginLeft="11dp"/>
+
+    <TextView
+        android:id="@+id/textViewError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#FF0000"
+        android:layout_alignEnd="@id/spinnerType"
+        android:layout_below="@+id/textViewType"
+        android:layout_marginTop="20dp"
+        android:textSize="17sp"
+        />
 
     <Button
         android:id="@+id/buttonRemove"

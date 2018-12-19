@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity
 
     private TextView tvName, tvEmail;
     private ImageView photo;
+    private String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity
         tvName.setText(user_table[0]);
         tvEmail.setText(user_table[1]);
         if (user_table[2] != null) Picasso.with(this).load(user_table[2]).into(photo);
+        uid = user_table[3];
     }
 
     @Override
@@ -80,11 +82,11 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_adding) {
             Intent intent = new Intent(this, MealActivity.class);
-            intent.putExtra("id", "1");
+            intent.putExtra("uid", uid);
             startActivity(intent);
         } else if (id == R.id.nav_meals) {
             Intent intent = new Intent(this, MealsListActivity.class);
-            intent.putExtra("id", "1");
+            intent.putExtra("uid", uid);
             startActivity(intent);
         } else if (id == R.id.nav_logout) {
             startActivity(new Intent(this, SignInActivity.class));

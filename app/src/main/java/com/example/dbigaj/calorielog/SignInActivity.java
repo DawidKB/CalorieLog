@@ -50,7 +50,7 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
             Intent intent = new Intent(this, MainActivity.class);
             if (account.getPhotoUrl() != null) photo = account.getPhotoUrl().toString();
             else photo = null;
-            String[] user_table = {account.getDisplayName(), account.getEmail(), photo};
+            String[] user_table = {account.getDisplayName(), account.getEmail(), photo, "ec029a0ac9a2cb64fd6d024d"};
             intent.putExtra("user", user_table);
             startActivity(intent);
         }

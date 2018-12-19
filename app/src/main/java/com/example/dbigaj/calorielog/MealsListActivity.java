@@ -1,8 +1,10 @@
 package com.example.dbigaj.calorielog;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
@@ -67,6 +69,10 @@ public class MealsListActivity extends AppCompatActivity {
         ArrayList<String> types = new ArrayList<String>();
         types.add("all");
         types.add("breakfast");
+        types.add("brunch");
+        types.add("elevenses");
+        types.add("lunch");
+        types.add("tea");
         types.add("dinner");
         types.add("supper");
         adapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, types);
@@ -77,7 +83,7 @@ public class MealsListActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 p = parent.getItemAtPosition(position).toString();
-                filter();
+                if (!p.equals("all")) filter();
             }
 
             @Override
@@ -100,11 +106,22 @@ public class MealsListActivity extends AppCompatActivity {
                 }
             }
         });
-
-        searchEvents(getApplicationContext(), uid);
     }
 
-    public static void searchEvents(final Context context, final String id) {
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        searchMeals(getApplicationContext(), uid);
+    }
+
+    public static void searchMeals(final Context context, final String id) {
         new Thread() {
             public void run() {
                 meals1 = getMeals(context, id);
@@ -135,7 +152,7 @@ public class MealsListActivity extends AppCompatActivity {
 
     public static ArrayList<Meal> getMeals(final Context context, final String id) {
         try {
-            URL url = new URL(String.format("http://156.17.42.122:8000/roles/?account_id=" + id));
+            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals?id=" + id));
             HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
 
@@ -145,34 +162,26 @@ public class MealsListActivity extends AppCompatActivity {
 
             Meal meal;
             ArrayList<Meal> events = new ArrayList<>();
-
             reader.beginArray();
             while (reader.hasNext()) {
                 meal = new Meal();
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String name = reader.nextName();
-                    if (name.equals("mealId")) {
+                    if (name.equals("photo")) {
+                        meal.setPhoto(reader.nextString());
+                    } else if (name.equals("_id")) {
                         meal.setMid(reader.nextString());
                     } else if (name.equals("name")) {
                         meal.setName(reader.nextString());
-                    } else if (name.equals("caloriesAmount")) {
+                    } else if (name.equals("userId")) {
+                        meal.setUid(reader.nextString());
+                    } else if (name.equals("kcal")) {
                         meal.setCaloriesAmount(reader.nextString());
-                    } else if (name.equals("dateTime")) {
+                    } else if (name.equals("type")) {
+                        meal.setType(tryCompare(reader.nextString()));
+                    } else if (name.equals("date")) {
                         meal.setDateTime(reader.nextString());
-                    } else if (name.equals("Type")) {
-                        String type = reader.nextString().toUpperCase();
-                        if (type.equals(Type.BREAKFAST.toString())) {
-                            meal.setType((Type.BREAKFAST));
-                        }
-                        if (type.equals(Type.DINNER.toString())) {
-                            meal.setType((Type.DINNER));
-                        }
-                        else {
-                            meal.setType((Type.SUPPER));
-                        }
-                    } else if (name.equals("photo")) {
-                        meal.setPhoto(reader.nextString());
                     } else {
                         reader.skipValue();
                     }
@@ -186,7 +195,6 @@ public class MealsListActivity extends AppCompatActivity {
 
             if (connection.getResponseCode() != 200) {
                 connection.disconnect();
-                return null;
             }
             connection.disconnect();
             return events;
@@ -195,8 +203,16 @@ public class MealsListActivity extends AppCompatActivity {
         }
     }
 
+    static private Type tryCompare(String s) {
+        try {
+            return Type.valueOf(s);
+        } catch (IllegalArgumentException e) {
+            return Type.ELEVENSES;
+        }
+    }
+
     public void filter(){
-        meals1.clear();
+        if (meals1 != null) meals1.clear();
         for(Meal m : meals2) {
             if (m.getName().contains(et_szukaj.getText().toString()) && (p.equals("all") || m.getType().equals(p))
                     && m.getDateTime().contains(tvDate.getText())) {

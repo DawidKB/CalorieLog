@@ -5,5 +5,5 @@ package com.example.dbigaj.calorielog;
  */
 
 public enum Type {
-    BREAKFAST, DINNER, SUPPER;
+    BREAKFAST, BRUNCH, ELEVENSES, LUNCH, TEA, DINNER, SUPPER;
 }

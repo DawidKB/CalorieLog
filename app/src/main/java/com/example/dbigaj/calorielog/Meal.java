@@ -6,6 +6,7 @@ package com.example.dbigaj.calorielog;
 
 public class Meal {
     private String mid;
+    private String uid;
     private String name;
     private String caloriesAmount;
     private String dateTime;
@@ -15,8 +16,9 @@ public class Meal {
     public Meal() {
     }
 
-    public Meal(String mid, String name, String caloriesAmount, String dateTime, Type type, String photo) {
+    public Meal(String mid, String uid, String name, String caloriesAmount, String dateTime, Type type, String photo) {
         this.mid = mid;
+        this.uid = uid;
         this.name = name;
         this.caloriesAmount = caloriesAmount;
         this.dateTime = dateTime;
@@ -30,6 +32,14 @@ public class Meal {
 
     public void setMid(String mid) {
         this.mid = mid;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getName() {
