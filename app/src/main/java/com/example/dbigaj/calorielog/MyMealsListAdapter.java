@@ -34,7 +34,7 @@ public class MyMealsListAdapter extends RecyclerView.Adapter<MyMealsListAdapter.
         holder.mid = holder.m.getMid();
         holder.uid = holder.m.getUid();
         holder.photoS = holder.m.getPhoto();
-        Picasso.with(context).load(holder.m.getPhoto()).into(holder.photo);
+        //Picasso.with(context).load(holder.m.getPhoto()).into(holder.photo);
         holder.name.setText(holder.m.getName());
         holder.dateTime.setText(holder.m.getDateTime());
         if (holder.m.getType() == null) holder.type.setText("Supper");

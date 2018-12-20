@@ -17,6 +17,7 @@ import android.text.format.DateFormat;
 import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -52,7 +53,7 @@ public class MealActivity extends AppCompatActivity {
     private Button bRemove, bEdit;
     private ImageView photo;
     private Spinner type;
-    private String mid, uid;
+    private String mid, uid, p;
     private int action;
     private final int EDIT = 1;
     private ArrayAdapter<String> adapter;
@@ -88,6 +89,17 @@ public class MealActivity extends AppCompatActivity {
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, types);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         type.setAdapter(adapter);
+        type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                p = parent.getItemAtPosition(position).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         action = getIntent().getIntExtra("action", -1);
         uid = getIntent().getStringExtra("uid");
@@ -121,7 +133,7 @@ public class MealActivity extends AppCompatActivity {
         } else {
             if (action == EDIT) editMeal();
             else {
-                addMeal(this, name.getText().toString(), "ec029a0ac9a2cb64fd6d024d", Integer.parseInt(caloriesAmount.getText().toString()), type.toString(), dateTime.getText().toString(), photo.toString());
+                addMeal(this, name.getText().toString(), "ec029a0ac9a2cb64fd6d024d", Integer.parseInt(caloriesAmount.getText().toString()), p, dateTime.getText().toString(), photo.toString());
                 Intent intent = new Intent(getApplicationContext(), MealsListActivity.class);
                 intent.putExtra("uid", uid);
                 sleep(1000);

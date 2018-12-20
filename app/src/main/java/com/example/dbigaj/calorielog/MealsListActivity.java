@@ -66,7 +66,11 @@ public class MealsListActivity extends AppCompatActivity {
         tvDate = (TextView) findViewById(R.id.textViewDate);
         type = (Spinner) findViewById(R.id.spinnerType);
 
+        Calendar c = Calendar.getInstance();
+        tvDate.setText(new SimpleDateFormat("yyyy-MM-dd").format(c.getTime()));
+
         ArrayList<String> types = new ArrayList<String>();
+        types.add("--wybierz--");
         types.add("all");
         types.add("breakfast");
         types.add("brunch");
@@ -83,7 +87,7 @@ public class MealsListActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 p = parent.getItemAtPosition(position).toString();
-                if (!p.equals("all")) filter();
+                if (!p.equals("--wybierz--")) filter();
             }
 
             @Override
@@ -106,13 +110,6 @@ public class MealsListActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
     }
 
     @Override
@@ -179,7 +176,7 @@ public class MealsListActivity extends AppCompatActivity {
                     } else if (name.equals("kcal")) {
                         meal.setCaloriesAmount(reader.nextString());
                     } else if (name.equals("type")) {
-                        meal.setType(tryCompare(reader.nextString()));
+                        meal.setType(tryCompare(reader.nextString().toUpperCase()));
                     } else if (name.equals("date")) {
                         meal.setDateTime(reader.nextString());
                     } else {
@@ -214,8 +211,10 @@ public class MealsListActivity extends AppCompatActivity {
     public void filter(){
         if (meals1 != null) meals1.clear();
         for(Meal m : meals2) {
-            if (m.getName().contains(et_szukaj.getText().toString()) && (p.equals("all") || m.getType().equals(p))
-                    && m.getDateTime().contains(tvDate.getText())) {
+            if (p.equals("--wybierz--") || ((et_szukaj.getText().toString().length() == 0 || m.getName().contains(et_szukaj.getText().toString()))
+                    && (p.equals("all") ||
+                    m.getType().equals(p))
+                    && m.getDateTime().contains(tvDate.getText()))) {
                 meals1.add(m);
             }
 
@@ -253,7 +252,7 @@ public class MealsListActivity extends AppCompatActivity {
     public void setDate(int year, int month, int day)
     {
         month += 1;
-        String d = timeToString(day) + "/" + timeToString(month) + "/" + timeToString(year);
+        String d = timeToString(year) + "-" + timeToString(month) + "-" + timeToString(day);
         tvDate.setText(d);
         filter();
     }
@@ -270,7 +269,7 @@ public class MealsListActivity extends AppCompatActivity {
 
             int year, month, day;
             Calendar c = Calendar.getInstance();
-            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
             /*Ustawiamy date jako te wczesniej wybrana przez uzytkownika
              *chyba ze jeszcze nic nie wybral, albo format danych jest niepoprawny,
