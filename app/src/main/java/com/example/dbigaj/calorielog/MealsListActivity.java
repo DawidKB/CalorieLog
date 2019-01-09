@@ -24,6 +24,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
@@ -42,7 +44,7 @@ public class MealsListActivity extends AppCompatActivity {
     private EditText et_szukaj;
     private Spinner type;
     static private TextView tvDate;
-    private String uid, p;
+    private String uid, p, token;
     private static MyMealsListAdapter adapter1;
     private ArrayAdapter<String> adapter2;
     private static ArrayList<Meal> meals1 = new ArrayList<>(), meals2 = new ArrayList<>();
@@ -60,6 +62,7 @@ public class MealsListActivity extends AppCompatActivity {
         meals2.clear();
 
         uid = getIntent().getStringExtra("uid");
+        token = getIntent().getStringExtra("token");
 
         myMealsListView = (RecyclerView) findViewById(R.id.listMyMeals);
         emptyView = (TextView) findViewById(R.id.emptyView);
@@ -115,14 +118,14 @@ public class MealsListActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        searchMeals(getApplicationContext(), uid);
+        searchMeals(getApplicationContext(), uid, token);
     }
 
-    public static void searchMeals(final Context context, final String id) {
+    public static void searchMeals(final Context context, final String id, final String token) {
         new Thread() {
             public void run() {
-                meals1 = getMeals(context, id);
-                meals2 = new ArrayList<>(meals1);
+                meals1 = getMeals(context, id, token);
+                //meals2 = new ArrayList<>(meals1);
                 if (meals1 == null) {
                     handler.post(new Runnable() {
                         public void run() {
@@ -147,13 +150,14 @@ public class MealsListActivity extends AppCompatActivity {
         }.start();
     }
 
-    public static ArrayList<Meal> getMeals(final Context context, final String id) {
+    public static ArrayList<Meal> getMeals(final Context context, final String id, final String token) {
         try {
-            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals?id=" + id));
+            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals"));
             HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
 
             connection.addRequestProperty("User-Agent", "my-rest-app");
+            connection.addRequestProperty("Authorization", token);
 
             JsonReader reader = new JsonReader(new InputStreamReader(connection.getInputStream()));
 
@@ -175,7 +179,7 @@ public class MealsListActivity extends AppCompatActivity {
                         meal.setUid(reader.nextString());
                     } else if (name.equals("kcal")) {
                         meal.setCaloriesAmount(reader.nextString());
-                    } else if (name.equals("type")) {
+                    } else if (name.equals("tag")) {
                         meal.setType(tryCompare(reader.nextString().toUpperCase()));
                     } else if (name.equals("date")) {
                         meal.setDateTime(reader.nextString());
@@ -196,7 +200,11 @@ public class MealsListActivity extends AppCompatActivity {
             connection.disconnect();
             return events;
         } catch (Exception e) {
-            return null;
+            ArrayList<Meal> l1 = new ArrayList<>();
+            Meal m = new Meal();
+            m.setName(e.getMessage());
+            l1.add(m);
+            return l1;
         }
     }
 

@@ -6,15 +6,18 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -47,6 +50,8 @@ import static java.lang.Thread.sleep;
 
 public class MealActivity extends AppCompatActivity {
     private final static int REQUEST_GALLERY = 0;
+    private static final int SELECT_PICTURE = 100;
+    private static final String TAG = "SelectImageActivity";
     private static TextView dateTime, tvError;
     static private String info;
     private EditText name, caloriesAmount;
@@ -172,14 +177,50 @@ public class MealActivity extends AppCompatActivity {
 
     public void fromGalleryOnClick(View view)
     {
-        File pictureDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        String pictureDirPath = pictureDir.getPath();
-        Uri data = Uri.parse(pictureDirPath);
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
+    }
 
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setDataAndType(data, "image/*");
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
 
-        startActivityForResult(intent, REQUEST_GALLERY);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (resultCode == RESULT_OK) {
+                    if (requestCode == SELECT_PICTURE) {
+                        // Get the url from data
+                        final Uri selectedImageUri = data.getData();
+                        if (null != selectedImageUri) {
+                            // Get the path from the Uri
+                            String path = getPathFromURI(selectedImageUri);
+                            Log.i(TAG, "Image Path : " + path);
+                            // Set the image in ImageView
+                            photo.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    photo.setImageURI(selectedImageUri);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        }).start();
+    }
+
+    /* Get the real path from the URI */
+    public String getPathFromURI(Uri contentUri) {
+        String res = null;
+        String[] proj = {MediaStore.Images.Media.DATA};
+        Cursor cursor = getContentResolver().query(contentUri, proj, null, null, null);
+        if (cursor.moveToFirst()) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            res = cursor.getString(column_index);
+        }
+        cursor.close();
+        return res;
     }
 
     //Okno dialogowe informujące i potrzebie wybrania choroby jakiej dotyczy notatka

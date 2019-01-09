@@ -24,6 +24,8 @@ import android.widget.TextView;
 import com.google.android.gms.auth.api.Auth;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity
     private TextView tvName, tvEmail;
     static private TextView tvCalorie;
     private ImageView photo;
-    private String uid, date;
+    private String uid, date, token;
     static private Handler handler;
 
     public MainActivity() {
@@ -78,17 +80,18 @@ public class MainActivity extends AppCompatActivity
         tvEmail.setText(user_table[1]);
         if (user_table[2] != null) Picasso.with(this).load(user_table[2]).into(photo);
         uid = user_table[3];
+        token = user_table[4];
 
         Calendar c = Calendar.getInstance();
         date = new SimpleDateFormat("dd-MM-yyyy").format(c.getTime());
-        calculate(this, uid, date);
+        calculate(this, uid, date, token);
 //        Integer.toString(getCalorie(this, uid, date)))
     }
 
-    public static void calculate(final Context context, final String id, final String date) {
+    public static void calculate(final Context context, final String id, final String date, final String token) {
         new Thread() {
             public void run() {
-                final String calorie = getCalorie(context, id, date);
+                final String calorie = getCalorie(context, id, date, token);
                 if (calorie != null) {
                     handler.post(new Runnable() {
                         public void run() {
@@ -140,33 +143,29 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public static String getCalorie(final Context context, final String id, final String date) {
+    public static String getCalorie(final Context context, final String id, final String date, final String token) {
         try {
-            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/kcal/xxx?userId=" + id + "&date=" + date));
+            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals/kcal?date=" + date));
             HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
 
             connection.addRequestProperty("User-Agent", "my-rest-app");
+            connection.addRequestProperty("Authorization", token);
 
-            String result = null;
-            StringBuffer sb = new StringBuffer();
-            InputStream is = null;
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
 
-            is = new BufferedInputStream(connection.getInputStream());
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String inputLine = "";
-            while ((inputLine = br.readLine()) != null) {
-                sb.append(inputLine);
-            }
-            result = sb.toString();
+            StringBuilder sb = new StringBuilder(reader.readLine());
+
+            reader.close();
 
             if (connection.getResponseCode() != 200) {
                 connection.disconnect();
             }
             connection.disconnect();
-            return result;
+            return sb.toString();
         } catch (Exception e) {
-            return "999";
+            return e.toString();
         }
     }
 }
