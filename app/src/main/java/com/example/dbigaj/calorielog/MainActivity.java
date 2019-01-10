@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView photo;
     private String uid, date, token;
     static private Handler handler;
+    private static Global global = new Global();
 
     public MainActivity() {
         handler = new Handler();
@@ -84,14 +85,13 @@ public class MainActivity extends AppCompatActivity
 
         Calendar c = Calendar.getInstance();
         date = new SimpleDateFormat("dd-MM-yyyy").format(c.getTime());
-        calculate(this, uid, date, token);
-//        Integer.toString(getCalorie(this, uid, date)))
+        calculate(date, token);
     }
 
-    public static void calculate(final Context context, final String id, final String date, final String token) {
+    public static void calculate(final String date, final String token) {
         new Thread() {
             public void run() {
-                final String calorie = getCalorie(context, id, date, token);
+                final String calorie = getCalorie(date, token);
                 if (calorie != null) {
                     handler.post(new Runnable() {
                         public void run() {
@@ -129,10 +129,12 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_adding) {
             Intent intent = new Intent(this, MealActivity.class);
             intent.putExtra("uid", uid);
+            intent.putExtra("token", token);
             startActivity(intent);
         } else if (id == R.id.nav_meals) {
             Intent intent = new Intent(this, MealsListActivity.class);
             intent.putExtra("uid", uid);
+            intent.putExtra("token", token);
             startActivity(intent);
         } else if (id == R.id.nav_logout) {
             startActivity(new Intent(this, SignInActivity.class));
@@ -143,9 +145,9 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public static String getCalorie(final Context context, final String id, final String date, final String token) {
+    public static String getCalorie(final String date, final String token) {
         try {
-            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals/kcal?date=" + date));
+            URL url = new URL(String.format(global.getUrl() + "/meals/kcal?date=" + date));
             HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
 

@@ -48,6 +48,7 @@ public class MealsListActivity extends AppCompatActivity {
     private static MyMealsListAdapter adapter1;
     private ArrayAdapter<String> adapter2;
     private static ArrayList<Meal> meals1 = new ArrayList<>(), meals2 = new ArrayList<>();
+    private static Global global = new Global();
 
     public MealsListActivity() {
         handler = new Handler();
@@ -108,9 +109,7 @@ public class MealsListActivity extends AppCompatActivity {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(s.length() != 0){
-                    filter();
-                }
+                filter();
             }
         });
     }
@@ -125,8 +124,8 @@ public class MealsListActivity extends AppCompatActivity {
         new Thread() {
             public void run() {
                 meals1 = getMeals(context, id, token);
-                //meals2 = new ArrayList<>(meals1);
-                if (meals1 == null) {
+                if (meals1 != null) meals2 = new ArrayList<>(meals1);
+                if (meals1 == null || meals1.size() == 0) {
                     handler.post(new Runnable() {
                         public void run() {
                             myMealsListView.setVisibility(View.GONE);
@@ -139,7 +138,7 @@ public class MealsListActivity extends AppCompatActivity {
                             myMealsListView.setVisibility(View.VISIBLE);
                             emptyView.setVisibility(View.GONE);
                             Collections.reverse(meals1);
-                            adapter1 = new MyMealsListAdapter(meals1);
+                            adapter1 = new MyMealsListAdapter(meals1, token);
                             RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(context);
                             myMealsListView.setLayoutManager(mLayoutManager);
                             myMealsListView.setAdapter(adapter1);
@@ -152,12 +151,14 @@ public class MealsListActivity extends AppCompatActivity {
 
     public static ArrayList<Meal> getMeals(final Context context, final String id, final String token) {
         try {
-            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals"));
+            URL url = new URL(String.format(global.getUrl() + "/meals"));
             HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
 
             connection.addRequestProperty("User-Agent", "my-rest-app");
             connection.addRequestProperty("Authorization", token);
+
+            int con = connection.getResponseCode();
 
             JsonReader reader = new JsonReader(new InputStreamReader(connection.getInputStream()));
 
@@ -200,11 +201,7 @@ public class MealsListActivity extends AppCompatActivity {
             connection.disconnect();
             return events;
         } catch (Exception e) {
-            ArrayList<Meal> l1 = new ArrayList<>();
-            Meal m = new Meal();
-            m.setName(e.getMessage());
-            l1.add(m);
-            return l1;
+            return null;
         }
     }
 
@@ -221,7 +218,7 @@ public class MealsListActivity extends AppCompatActivity {
         for(Meal m : meals2) {
             if (p.equals("--wybierz--") || ((et_szukaj.getText().toString().length() == 0 || m.getName().contains(et_szukaj.getText().toString()))
                     && (p.equals("all") ||
-                    m.getType().equals(p))
+                    m.getType().toString().toLowerCase().equals(p))
                     && m.getDateTime().contains(tvDate.getText()))) {
                 meals1.add(m);
             }

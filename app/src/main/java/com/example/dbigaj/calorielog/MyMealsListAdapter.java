@@ -19,6 +19,7 @@ import java.util.List;
 public class MyMealsListAdapter extends RecyclerView.Adapter<MyMealsListAdapter.MyViewHolder> {
     private Context context;
     private final List<Meal> myMeals;
+    private String token;
 
     @Override
     public MyMealsListAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -68,6 +69,7 @@ public class MyMealsListAdapter extends RecyclerView.Adapter<MyMealsListAdapter.
                     String[] meals_table = {mid, photoS, name.getText().toString(), dateTime.getText().toString(), type.getText().toString(),
                             caloriesAmount.getText().toString()};
                     intent.putExtra("uid", uid);
+                    intent.putExtra("token", token);
                     intent.putExtra("meals", meals_table);
                     intent.putExtra("action", 1);
                     context.startActivity(intent);
@@ -77,7 +79,8 @@ public class MyMealsListAdapter extends RecyclerView.Adapter<MyMealsListAdapter.
         }
     }
 
-    public MyMealsListAdapter(List<Meal> myMeals) {
+    public MyMealsListAdapter(List<Meal> myMeals, String token) {
         this.myMeals = myMeals;
+        this.token = token;
     }
 }

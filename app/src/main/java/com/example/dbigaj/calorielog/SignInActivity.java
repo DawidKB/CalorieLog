@@ -32,6 +32,7 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
     String photo;
     private static Handler handler;
     GoogleApiClient googleApiClient;
+    private static Global global = new Global();
 
     public SignInActivity() {
         handler = new Handler();
@@ -89,7 +90,7 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
     public static void logUser(final Context context, final String id, final String name, final String email, final String token, final String photo) {
         new Thread() {
             public void run() {
-                isCorrectData(context, email, id, name, token);
+                String s = isCorrectData(context, email, id, name, token);
 
                 handler.post(new Runnable() {
                     public void run() {
@@ -105,20 +106,23 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
 
     public static String isCorrectData(final Context context, final String email, final String id, final String name, final String token) {
         try {
-            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/login/google"));
+            URL url = new URL(String.format(global.getUrl() + "/login/google"));
             HttpURLConnection connection =
             (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             JSONObject postData = new JSONObject();
-            postData.put("email", email);
-            postData.put("id", id);
-            postData.put("name", name);
+            JSONObject profile = new JSONObject();
+            profile.put("email", email);
+            profile.put("id", id);
+            profile.put("name", name);
+            postData.put("profile", profile);
             postData.put("token", token);
 
             connection.getOutputStream().write(postData.toString().getBytes());
 
+            int con = connection.getResponseCode();
             BufferedReader reader = new BufferedReader(
             new InputStreamReader(connection.getInputStream()));
 

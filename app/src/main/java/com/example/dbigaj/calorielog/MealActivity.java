@@ -58,11 +58,12 @@ public class MealActivity extends AppCompatActivity {
     private Button bRemove, bEdit;
     private ImageView photo;
     private Spinner type;
-    private String mid, uid, p;
+    private String mid, uid, p, token;
     private int action;
     private final int EDIT = 1;
     private ArrayAdapter<String> adapter;
     private static Handler handler;
+    private static Global global = new Global();
 
 
     public MealActivity() {
@@ -108,6 +109,7 @@ public class MealActivity extends AppCompatActivity {
 
         action = getIntent().getIntExtra("action", -1);
         uid = getIntent().getStringExtra("uid");
+        token = getIntent().getStringExtra("token");
 
         if (action == EDIT) {
             String[] meals_table = getIntent().getStringArrayExtra("meals");
@@ -136,11 +138,19 @@ public class MealActivity extends AppCompatActivity {
             info = "All fields needs to be filled!";
             showDialog(0);
         } else {
-            if (action == EDIT) editMeal();
-            else {
-                addMeal(this, name.getText().toString(), "ec029a0ac9a2cb64fd6d024d", Integer.parseInt(caloriesAmount.getText().toString()), p, dateTime.getText().toString(), photo.toString());
+            if (action == EDIT) {
+                editMeal(name.getText().toString(), uid, Integer.parseInt(caloriesAmount.getText().toString()), p, dateTime.getText().toString(), token, mid);
                 Intent intent = new Intent(getApplicationContext(), MealsListActivity.class);
                 intent.putExtra("uid", uid);
+                intent.putExtra("token", token);
+                sleep(1000);
+                startActivity(intent);
+            }
+            else {
+                addMeal(name.getText().toString(), uid, Integer.parseInt(caloriesAmount.getText().toString()), p, dateTime.getText().toString(), token);
+                Intent intent = new Intent(getApplicationContext(), MealsListActivity.class);
+                intent.putExtra("uid", uid);
+                intent.putExtra("token", token);
                 sleep(1000);
                 startActivity(intent);
             }
@@ -151,16 +161,21 @@ public class MealActivity extends AppCompatActivity {
         final Context context = this;
         new Thread() {
             public void run() {
-                deleteFromDatabase(context, mid);
+                deleteFromDatabase(mid, token);
                 Intent intent = new Intent(getApplicationContext(), MealsListActivity.class);
                 intent.putExtra("uid", uid);
+                intent.putExtra("token", token);
                 startActivity(intent);
             }
         }.start();
     }
 
-    void editMeal(){
-
+    void editMeal(final String name, final String userId, final int kcal, final String type, final String dateTime, final String token, final String mid) {
+        new Thread() {
+            public void run() {
+                validateData(name, userId, kcal, type, dateTime, token, mid);
+            }
+        }.start();
     };
 
     //Okno dialogowe informujące i potrzebie wybrania choroby jakiej dotyczy notatka
@@ -355,28 +370,29 @@ public class MealActivity extends AppCompatActivity {
         }
     }
 
-    public static void addMeal(final Context context, final String name, final String userId, final int kcal, final String type, final String dateTime, final String photo) {
+    public static void addMeal(final String name, final String userId, final int kcal, final String type, final String dateTime, final String token) {
         new Thread() {
             public void run() {
-                isCorrectData(context, name, userId, kcal, type, dateTime, photo);
+                isCorrectData(name, userId, kcal, type, dateTime, token);
             }
         }.start();
     }
 
-    public static String isCorrectData(final Context context, final String name, final String userId, final int kcal, final String type, final String dateTime, final String photo) {
+    public static String isCorrectData(final String name, final String userId, final int kcal, final String type, final String dateTime, final String token) {
         try {
-            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals"));
+            URL url = new URL(String.format(global.getUrl() + "/meals"));
             HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
+            connection.addRequestProperty("Authorization", token);
             JSONObject postData = new JSONObject();
-            postData.put("photo", "A"); //zmienic value
+            postData.put("photo", "photo.png");
             postData.put("name", name);
             postData.put("userId", userId);
             postData.put("kcal", kcal);
-            postData.put("type", type);
+            postData.put("tag", type);
             dateTime.replace(" ", "T");
             postData.put("date", dateTime + ":00.000000");
             connection.getOutputStream().write(postData.toString().getBytes());
@@ -399,14 +415,53 @@ public class MealActivity extends AppCompatActivity {
         }
     }
 
-    public static String deleteFromDatabase(final Context context, final String mealId) {
+    public static String validateData(final String name, final String userId, final int kcal, final String type, final String dateTime,final String token, final String mid) {
         try {
-            URL url = new URL(String.format("https://meal-diary-api.herokuapp.com/meals/" + mealId));
+            URL url = new URL(String.format(global.getUrl() + "/meals/" + mid));
+            HttpURLConnection connection =
+                    (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("PATCH");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.addRequestProperty("Authorization", token);
+            JSONObject postData = new JSONObject();
+//            postData.put("photo", "photo.png");
+            postData.put("name", name);
+//            postData.put("kcal", kcal);
+//            postData.put("tag", type);
+//            dateTime.replace(" ", "T");
+//            postData.put("date", dateTime + ":00.000000");
+            connection.getOutputStream().write(postData.toString().getBytes());
+
+            int con = connection.getResponseCode();
+
+//            BufferedReader reader = new BufferedReader(
+//                    new InputStreamReader(connection.getInputStream()));
+//
+//            StringBuilder sb = new StringBuilder(reader.readLine());
+//
+//            reader.close();
+
+            if (connection.getResponseCode() != 200) {
+                connection.disconnect();
+                return "Connection error";
+            }
+            connection.disconnect();
+            return null;
+        } catch (Exception e) {
+            return "All fields are required";
+        }
+    }
+
+    public static String deleteFromDatabase(final String mealId, final String token) {
+        try {
+            URL url = new URL(String.format(global.getUrl() + "/meals/" + mealId));
             HttpURLConnection connection =
                     (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("DELETE");
             connection.setRequestProperty("Content-Type", "application/json");
+            connection.addRequestProperty("Authorization", token);
             JSONObject postData = new JSONObject();
 
             BufferedReader reader = new BufferedReader(
