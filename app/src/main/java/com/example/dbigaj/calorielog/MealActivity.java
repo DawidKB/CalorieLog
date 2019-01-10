@@ -115,7 +115,7 @@ public class MealActivity extends AppCompatActivity {
             String[] meals_table = getIntent().getStringArrayExtra("meals");
 
             mid = meals_table[0];
-            Picasso.with(this).load(meals_table[1]).into(photo);
+            photo.setImageResource(R.drawable.meal);
             name.setText(meals_table[2]);
             dateTime.setText(meals_table[3]);
             type.setSelection(adapter.getPosition(meals_table[4].toLowerCase()));
@@ -143,7 +143,7 @@ public class MealActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), MealsListActivity.class);
                 intent.putExtra("uid", uid);
                 intent.putExtra("token", token);
-                sleep(1000);
+                sleep(2000);
                 startActivity(intent);
             }
             else {
